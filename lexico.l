@@ -12,6 +12,7 @@ ID {LETRA}({LETRA}|{DIGITO}|_)*
 
 DELIM {ESPACO}+
 NUM {DIGITO}+
+REAL {DIGITO}+"."{DIGITO}+
 
 
 %%
@@ -37,6 +38,11 @@ NUM {DIGITO}+
              yylval.label = std::string(yytext); 
              yylval.traducao = std::string(yytext);
              return TK_NUM; 
+            }
+{REAL}      {
+             yylval.label = std::string(yytext);
+             yylval.traducao = std::string(yytext);
+             return TK_REAL;
             }
 
 .			{ fprintf(stderr, "Caractere nao reconhecido na linha %d: %s\n", linha, yytext); }

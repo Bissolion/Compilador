@@ -61,7 +61,7 @@ void inserir_simbolo(string nome, Tipo tipo, string celula) {
 }
 %}
 
-%token TK_NUM TK_ID 
+%token TK_NUM TK_REAL TK_ID 
 %token TK_INT TK_FLOAT TK_CHAR TK_BOOL
 
 %start S
@@ -83,7 +83,8 @@ S 			: DECLARACOES COMANDOS
 
 				codigo_gerado += "\treturn 0;"
 							"\n}\n";
-			}
+			} 
+			;
 DECLARACOES : DECLARACOES DECLARACAO | ;
 
 DECLARACAO : TIPO TK_ID ';' 
@@ -100,7 +101,6 @@ TIPO : TK_INT	{ $$.tipo = T_INT;	}
 	 | TK_BOOL { $$.tipo = T_BOOL; }
 	 ;
 
-			;
 COMANDOS : COMANDOS COMANDO { $$.traducao = $1.traducao + $2.traducao; }
 	 | COMANDO { $$ = $1; }
 	 ;
@@ -112,7 +112,7 @@ COMANDO : TK_ID '=' E
 			yyerror("Variavel '" + $1.label + "' nao declarada.");
 		}
 		$$.traducao = $3.traducao + "\t" + s.celula + " = " + $3.label + ";\n";
-	 }
+	 } ;
 
 
 E 			: E '+' E
@@ -180,6 +180,13 @@ E 			: E '+' E
 				$$.label = gentempcode();
 				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
 				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+			}
+			| TK_REAL 
+			{
+				$$.tipo = T_FLOAT;
+				$$.label = gentempcode();
+				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
+				$$.traducao = "\t" + $$.label + " = " + $1.label + ";/n";
 			}
 			| TK_ID
 			{
