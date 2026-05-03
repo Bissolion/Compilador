@@ -154,6 +154,10 @@ E 			: E '+' E
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
 					" = " + $1.label + " % " + $3.label + ";\n";
 			}
+			| '(' E ')'
+			{
+				$$ = $2;
+			}
 			| TK_NUM
 			{
 				$$.tipo = T_INT;
