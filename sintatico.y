@@ -28,8 +28,6 @@ string codigo_gerado;
 string celulas;
 vector<Simbolo> tabela_simbolos;
 
-
-
 int yylex(void);
 void yyerror(string);
 string gentempcode();
@@ -136,61 +134,48 @@ COMANDO : TK_ID '=' E ';'
 		}
 		$$.traducao = $3.traducao + "\t" + s.celula + " = " + $3.label + ";\n";		
 	 }
+	 | E ';' { $$ = $1; }
+	 | E     { $$ = $1; }
 	 ;
 
 
 E 			: E '+' E
 			{
 				$$.tipo = ($1.tipo == T_FLOAT || $3.tipo == T_FLOAT) ? T_FLOAT : T_INT;
-
 				$$.label = gentempcode();
-
 				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
-
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
 					" = " + $1.label + " + " + $3.label + ";\n";
 			}
 			| E '-' E
 			{
 				$$.tipo = ($1.tipo == T_FLOAT || $3.tipo == T_FLOAT) ? T_FLOAT : T_INT;
-
 				$$.label = gentempcode();
-
 				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
-
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
 					" = " + $1.label + " - " + $3.label + ";\n";
 			}
 			| E '*' E
 			{
 				$$.tipo = ($1.tipo == T_FLOAT || $3.tipo == T_FLOAT) ? T_FLOAT : T_INT;
-
 				$$.label = gentempcode();
-
 				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
-
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
 					" = " + $1.label + " * " + $3.label + ";\n";
 			}
 			| E '/' E
 			{
 				$$.tipo = ($1.tipo == T_FLOAT || $3.tipo == T_FLOAT) ? T_FLOAT : T_INT;
-
 				$$.label = gentempcode();
-
 				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
-
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
 					" = " + $1.label + " / " + $3.label + ";\n";
 			}
 			| E '%' E
 			{
 				$$.tipo = T_INT;
-
 				$$.label = gentempcode();
-
 				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
-
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
 					" = " + $1.label + " % " + $3.label + ";\n";
 			}
@@ -210,16 +195,16 @@ E 			: E '+' E
 				$$.tipo = T_FLOAT;
 				$$.label = gentempcode();
 				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
-				$$.traducao = "\t" + $$.label + " = " + $1.label + ";/n";
+				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
 			}
-			TK_CHAR_LIT
+			| TK_CHAR_LIT
 			{
 				$$.tipo = T_CHAR;
 				$$.label = gentempcode();
 				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
 				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n"; 
 			}
-			TK_BOOL_LIT
+			| TK_BOOL_LIT
 			{
 				$$.tipo = T_BOOL;
 				$$.label = gentempcode();
