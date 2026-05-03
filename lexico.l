@@ -25,7 +25,7 @@ NUM {DIGITO}+
 "char"      { return TK_CHAR; }
 "bool"      { return TK_BOOL; }
 
-[+*;=]			{ return *yytext; }
+[+*-/%;=]			{ return *yytext; }
 
 
 {ID}        {

@@ -64,8 +64,8 @@ void inserir_simbolo(string nome, Tipo tipo) {
 
 %start S
 
-%left '+'
-%left '*'
+%left '+' '-'
+%left '*' '/' '%'
 
 %%
 
@@ -110,6 +110,17 @@ E 			: E '+' E
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
 					" = " + $1.label + " + " + $3.label + ";\n";
 			}
+			| E '-' E
+			{
+				$$.tipo = ($1.tipo == T_FLOAT || $3.tipo == T_FLOAT) ? T_FLOAT : T_INT;
+
+				$$.label = gentempcode();
+
+				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
+
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
+					" = " + $1.label + " - " + $3.label + ";\n";
+			}
 			| E '*' E
 			{
 				$$.tipo = ($1.tipo == T_FLOAT || $3.tipo == T_FLOAT) ? T_FLOAT : T_INT;
@@ -120,6 +131,28 @@ E 			: E '+' E
 
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
 					" = " + $1.label + " * " + $3.label + ";\n";
+			}
+			| E '/' E
+			{
+				$$.tipo = ($1.tipo == T_FLOAT || $3.tipo == T_FLOAT) ? T_FLOAT : T_INT;
+
+				$$.label = gentempcode();
+
+				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
+
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
+					" = " + $1.label + " / " + $3.label + ";\n";
+			}
+			| E '%' E
+			{
+				$$.tipo = T_INT;
+
+				$$.label = gentempcode();
+
+				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
+
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
+					" = " + $1.label + " % " + $3.label + ";\n";
 			}
 			| TK_NUM
 			{
