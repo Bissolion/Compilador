@@ -59,8 +59,6 @@ void inserir_simbolo(string nome, Tipo tipo, string celula) {
 }
 %}
 
-%define parse.error verbose
-
 %token TK_NUM TK_REAL TK_CHAR_LIT TK_BOOL_LIT TK_ID 
 %token TK_INT TK_FLOAT TK_CHAR TK_BOOL
 
