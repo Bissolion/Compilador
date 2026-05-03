@@ -39,7 +39,7 @@ string traduzTipo(Tipo t) {
 		case T_INT:		return "int";
 		case T_FLOAT:	return "float";
 		case T_CHAR: 	return "char";
-		case T_BOOL:	return "bool";
+		case T_BOOL:	return "int";
 		default: 		return "int";
 	}
 }
@@ -61,7 +61,9 @@ void inserir_simbolo(string nome, Tipo tipo, string celula) {
 }
 %}
 
-%token TK_NUM TK_REAL TK_ID 
+%define parse.error verbose
+
+%token TK_NUM TK_REAL TK_CHAR_LIT TK_BOOL_LIT TK_ID 
 %token TK_INT TK_FLOAT TK_CHAR TK_BOOL
 
 %start S
@@ -71,7 +73,7 @@ void inserir_simbolo(string nome, Tipo tipo, string celula) {
 
 %%
 
-S 			: DECLARACOES COMANDOS
+S 			: LINHAS
 			{
 				codigo_gerado = "/*Compilador FOCA*/\n"
 								"#include <stdio.h>\n"
@@ -79,13 +81,30 @@ S 			: DECLARACOES COMANDOS
 
 				codigo_gerado += celulas + "\n";
 
-				codigo_gerado += $2.traducao;
+				codigo_gerado += $1.traducao;
 
 				codigo_gerado += "\treturn 0;"
 							"\n}\n";
 			} 
 			;
-DECLARACOES : DECLARACOES DECLARACAO | ;
+			LINHAS : LINHAS LINHA
+			{
+				$$.traducao = $1.traducao + $2.traducao;
+			}
+			| LINHA
+			{
+				$$ = $1;
+			}
+			;
+			LINHA : DECLARACAO
+			{
+				$$.traducao = "";
+			}
+			| COMANDO 
+			{
+				$$ = $1;
+			}
+			;	
 
 DECLARACAO : TIPO TK_ID ';' 
 	{
@@ -101,18 +120,23 @@ TIPO : TK_INT	{ $$.tipo = T_INT;	}
 	 | TK_BOOL { $$.tipo = T_BOOL; }
 	 ;
 
-COMANDOS : COMANDOS COMANDO { $$.traducao = $1.traducao + $2.traducao; }
-	 | COMANDO { $$ = $1; }
-	 ;
-
-COMANDO : TK_ID '=' E
+COMANDO : TK_ID '=' E ';'
 	 {
 		Simbolo s = buscar_simbolo($1.label);
 		if (s.tipo == T_ERRO) {
 			yyerror("Variavel '" + $1.label + "' nao declarada.");
 		}
 		$$.traducao = $3.traducao + "\t" + s.celula + " = " + $3.label + ";\n";
-	 } ;
+	 } 
+	 | TK_ID '=' E 
+	 {
+		Simbolo s = buscar_simbolo($1.label);
+		if (s.tipo == T_ERRO) {
+			yyerror("Variavel '" + $1.label + "' nao declarada.");
+		}
+		$$.traducao = $3.traducao + "\t" + s.celula + " = " + $3.label + ";\n";		
+	 }
+	 ;
 
 
 E 			: E '+' E
@@ -187,6 +211,20 @@ E 			: E '+' E
 				$$.label = gentempcode();
 				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
 				$$.traducao = "\t" + $$.label + " = " + $1.label + ";/n";
+			}
+			TK_CHAR_LIT
+			{
+				$$.tipo = T_CHAR;
+				$$.label = gentempcode();
+				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
+				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n"; 
+			}
+			TK_BOOL_LIT
+			{
+				$$.tipo = T_BOOL;
+				$$.label = gentempcode();
+				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
+				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
 			}
 			| TK_ID
 			{

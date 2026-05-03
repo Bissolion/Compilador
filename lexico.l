@@ -26,7 +26,11 @@ REAL {DIGITO}+"."{DIGITO}+
 "char"      { return TK_CHAR; }
 "bool"      { return TK_BOOL; }
 
-[+*-/%;=()]			{ return *yytext; }
+"true"      { yylval.label = "1"; return TK_BOOL_LIT; }
+"false"     { yylval.label = "0"; return TK_BOOL_LIT; }
+"'"."'"     { yylval.label = std::string(yytext); return TK_CHAR_LIT; }
+
+[-+*/%;=()]			{ return *yytext; }
 
 
 {ID}        {
