@@ -19,6 +19,7 @@ struct atributos
 struct Simbolo {
 	string nome;
 	Tipo tipo;
+	string celula;
 };
 
 int var_temp_qnt;
@@ -39,22 +40,23 @@ string traduzTipo(Tipo t) {
 		case T_FLOAT:	return "float";
 		case T_CHAR: 	return "char";
 		case T_BOOL:	return "bool";
-		default: 		return "void";
+		default: 		return "int";
 	}
 }
 
-Tipo buscar_tipo(string nome) {
+Simbolo buscar_simbolo(string nome) {
 	for (const auto& s : tabela_simbolos){
-		if (s.nome == nome) return s.tipo;
+		if (s.nome == nome) return s;
 	}
-	return T_ERRO;
+	return {"", T_ERRO, ""};
 }
 
-void inserir_simbolo(string nome, Tipo tipo) {
-	if (buscar_tipo(nome) != T_ERRO) {
+void inserir_simbolo(string nome, Tipo tipo, string celula) {
+	Simbolo s = buscar_simbolo(nome);
+	if (s.tipo != T_ERRO) {
 		yyerror("Variavel '" + nome + "' ja declarada.");
 	} else {
-		tabela_simbolos.push_back({nome, tipo});
+		tabela_simbolos.push_back({nome, tipo, celula});
 	}
 }
 %}
@@ -69,7 +71,7 @@ void inserir_simbolo(string nome, Tipo tipo) {
 
 %%
 
-S 			: DECLARACOES E
+S 			: DECLARACOES COMANDOS
 			{
 				codigo_gerado = "/*Compilador FOCA*/\n"
 								"#include <stdio.h>\n"
@@ -82,14 +84,13 @@ S 			: DECLARACOES E
 				codigo_gerado += "\treturn 0;"
 							"\n}\n";
 			}
-			;
-
 DECLARACOES : DECLARACOES DECLARACAO | ;
 
 DECLARACAO : TIPO TK_ID ';' 
 	{
-		inserir_simbolo($2.label, $1.tipo);
-		celulas += "\t" + traduzTipo($1.tipo) + " " + $2.label + ";\n";
+		string nova_celula = gentempcode();
+		inserir_simbolo($2.label, $1.tipo, nova_celula);
+		celulas += "\t" + traduzTipo($1.tipo) + " " + nova_celula + ";\n";
 	}
 	;
 
@@ -98,6 +99,21 @@ TIPO : TK_INT	{ $$.tipo = T_INT;	}
 	 | TK_CHAR { $$.tipo = T_CHAR; }
 	 | TK_BOOL { $$.tipo = T_BOOL; }
 	 ;
+
+			;
+COMANDOS : COMANDOS COMANDO { $$.traducao = $1.traducao + $2.traducao; }
+	 | COMANDO { $$ = $1; }
+	 ;
+
+COMANDO : TK_ID '=' E
+	 {
+		Simbolo s = buscar_simbolo($1.label);
+		if (s.tipo == T_ERRO) {
+			yyerror("Variavel '" + $1.label + "' nao declarada.");
+		}
+		$$.traducao = $3.traducao + "\t" + s.celula + " = " + $3.label + ";\n";
+	 }
+
 
 E 			: E '+' E
 			{
@@ -167,11 +183,12 @@ E 			: E '+' E
 			}
 			| TK_ID
 			{
-				$$.tipo = buscar_tipo($1.label);
-				if ($$.tipo == T_ERRO) {
-						yyerror("Variavel '" + $1.label + "' nao declarada.");
+				Simbolo s = buscar_simbolo($1.label);
+				if (s.tipo == T_ERRO){
+					yyerror("Variavel '" + $1.label + "' nao declarada.");
 				}
-				$$.label = $1.label;
+				$$.tipo = s.tipo;
+				$$.label = s.celula;
 				$$.traducao = "";
 			}
 			;

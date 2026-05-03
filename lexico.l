@@ -7,7 +7,7 @@
 
 ESPACO [ \t]
 DIGITO [0-9]
-LETRA [a-zA-z]
+LETRA [a-zA-Z]
 ID {LETRA}({LETRA}|{DIGITO}|_)*
 
 DELIM {ESPACO}+
