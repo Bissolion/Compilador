@@ -30,6 +30,17 @@ REAL {DIGITO}+"."{DIGITO}+
 "false"     { yylval.label = "0"; return TK_BOOL_LIT; }
 "'"."'"     { yylval.label = std::string(yytext); return TK_CHAR_LIT; }
 
+"<="        { return TK_LE; }
+">="        { return TK_GE; }
+"=="        { return TK_EQ; }
+"!="        { return TK_NE; }
+"<"         { return TK_LT; }
+">"         { return TK_GT; }
+
+"&&"        { return TK_AND; }
+"||"        { return TK_OR; }
+"!"         { return TK_NOT; }
+
 [-+*/%;=()]			{ return *yytext; }
 
 

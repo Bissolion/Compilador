@@ -61,11 +61,17 @@ void inserir_simbolo(string nome, Tipo tipo, string celula) {
 
 %token TK_NUM TK_REAL TK_CHAR_LIT TK_BOOL_LIT TK_ID 
 %token TK_INT TK_FLOAT TK_CHAR TK_BOOL
+%token TK_LT TK_LE TK_GT TK_GE TK_EQ TK_NE
+%token TK_AND TK_OR TK_NOT
 
 %start S
 
+%left TK_OR
+%left TK_AND
+%left TK_LT TK_LE TK_GT TK_GE TK_EQ TK_NE
 %left '+' '-'
 %left '*' '/' '%'
+%right TK_NOT
 
 %%
 
@@ -177,6 +183,78 @@ E 			: E '+' E
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
 					" = " + $1.label + " % " + $3.label + ";\n";
 			}
+			| E TK_LT E
+			{
+				$$.tipo = T_BOOL;
+				$$.label = gentempcode();
+				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
+					" = " + $1.label + " < " + $3.label + ";\n";
+			}
+			| E TK_LE E
+			{
+				$$.tipo = T_BOOL;
+				$$.label = gentempcode();
+				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
+					" = " + $1.label + " <= " + $3.label + ";\n";
+			}
+			| E TK_GT E
+			{
+				$$.tipo = T_BOOL;
+				$$.label = gentempcode();
+				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
+					" = " + $1.label + " > " + $3.label + ";\n";
+			}
+			| E TK_GE E
+			{
+				$$.tipo = T_BOOL;
+				$$.label = gentempcode();
+				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
+					" = " + $1.label + " >= " + $3.label + ";\n";
+			}
+			| E TK_EQ E
+			{
+				$$.tipo = T_BOOL;
+				$$.label = gentempcode();
+				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
+					" = " + $1.label + " == " + $3.label + ";\n";
+			}
+			| E TK_NE E
+			{
+				$$.tipo = T_BOOL;
+				$$.label = gentempcode();
+				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
+					" = " + $1.label + " != " + $3.label + ";\n";
+			}
+			| E TK_AND E
+			{
+				$$.tipo = T_BOOL;
+				$$.label = gentempcode();
+				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
+					" = " + $1.label + " && " + $3.label + ";\n";
+			}
+			| E TK_OR E
+			{
+				$$.tipo = T_BOOL;
+				$$.label = gentempcode();
+				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label +
+					" = " + $1.label + " || " + $3.label + ";\n";
+			}
+			| TK_NOT E
+			{
+				$$.tipo = T_BOOL;
+				$$.label = gentempcode();
+				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
+				$$.traducao = $2.traducao + "\t" + $$.label +
+					" = !" + $2.label + ";\n";
+			}
 			| '(' E ')'
 			{
 				$$ = $2;
@@ -184,30 +262,26 @@ E 			: E '+' E
 			| TK_NUM
 			{
 				$$.tipo = T_INT;
-				$$.label = gentempcode();
-				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
-				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+				$$.label = $1.label;
+				$$.traducao = "";
 			}
 			| TK_REAL 
 			{
 				$$.tipo = T_FLOAT;
-				$$.label = gentempcode();
-				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
-				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+				$$.label = $1.label;
+				$$.traducao = "";
 			}
 			| TK_CHAR_LIT
 			{
 				$$.tipo = T_CHAR;
-				$$.label = gentempcode();
-				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
-				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n"; 
+				$$.label = $1.label;
+				$$.traducao = ""; 
 			}
 			| TK_BOOL_LIT
 			{
 				$$.tipo = T_BOOL;
-				$$.label = gentempcode();
-				celulas += "\t" + traduzTipo($$.tipo) + " " + $$.label + ";\n";
-				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+				$$.label = $1.label;
+				$$.traducao = "";
 			}
 			| TK_ID
 			{
